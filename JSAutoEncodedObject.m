@@ -8,6 +8,11 @@
 
 @implementation JSAutoEncodedObject
 
++ (NSArray *)encodingExcludedPropertyNames
+{
+    return nil;
+}
+
 - (id)initWithCoder:(NSCoder *)decoder
 {
     if (!(self = [super init])) {
@@ -35,28 +40,30 @@
 - (NSArray *)encodablePropertyNames
 {
     NSMutableArray *propertyNames = [NSMutableArray new];
-    NSArray *excludedPropertyNames = [self encodingExcludedPropertyNames];
     
-    unsigned int propertyCount;
-    objc_property_t *propertyList = class_copyPropertyList([self class], &propertyCount);
+    Class currentClass = [self class];
     
-    for (unsigned int i = 0; i < propertyCount; i++) {
-        objc_property_t property = propertyList[i];
-        NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
+    while (currentClass != [NSObject class]) {
+        NSArray *excludedPropertyNames = [currentClass encodingExcludedPropertyNames];
         
-        if (![excludedPropertyNames containsObject:propertyName]) {
-            [propertyNames addObject:propertyName];
+        unsigned int propertyCount;
+        objc_property_t *propertyList = class_copyPropertyList(currentClass, &propertyCount);
+        
+        for (unsigned int i = 0; i < propertyCount; i++) {
+            objc_property_t property = propertyList[i];
+            NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
+            
+            if (![excludedPropertyNames containsObject:propertyName] && ![propertyNames containsObject:propertyNames]) {
+                [propertyNames addObject:propertyName];
+            }
         }
+        
+        free(propertyList);
+        
+        currentClass = [currentClass superclass];
     }
     
-    free(propertyList);
-    
     return propertyNames;
-}
-
-- (NSArray *)encodingExcludedPropertyNames
-{
-    return nil;
 }
 
 @end

@@ -22,6 +22,6 @@
  *
  *  @discussion Defaults to nil.
  */
-- (NSArray *)encodingExcludedPropertyNames;
++ (NSArray *)encodingExcludedPropertyNames;
 
 @end
