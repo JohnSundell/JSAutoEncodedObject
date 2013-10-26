@@ -7,7 +7,7 @@
 
 /**
  *  A class that automatically encodes/decodes all of its
- *  properties when -initWithCoder: and -encodeWithCoder
+ *  properties when -initWithCoder: or -encodeWithCoder:
  *  is sent to it.
  *
  *  @discussion Meant to be used in an abstract manner,
