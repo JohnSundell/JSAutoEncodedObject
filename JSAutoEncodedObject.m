@@ -22,7 +22,11 @@
     NSArray *propertyNames = [self encodablePropertyNames];
     
     for (NSString *propertyName in propertyNames) {
-        [self setValue:[decoder decodeObjectForKey:propertyName] forKey:propertyName];
+        id propertyValue = [decoder decodeObjectForKey:propertyName];
+        
+        if (propertyValue) {
+            [self setValue:propertyValue forKey:propertyName];
+        }
     }
     
     return self;
