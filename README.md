@@ -52,7 +52,7 @@ JSAutoEncodedObject
 }
 ```
 
-#### 4. Done! You can now encode or decode your class and let JSAutoEncodedObject take care of the rest
+#### 4. Done! You can now encode or decode instaces of your class and let JSAutoEncodedObject take care of the rest
 
 ```objective-c
 NSData *data = [NSKeyedArchiver archivedDataWithRootObject:myClassInstance];
