@@ -25,7 +25,7 @@
         id propertyValue = [decoder decodeObjectForKey:propertyName];
         
         if (propertyValue) {
-            [self setValue:propertyValue forKey:propertyName];
+            [self setValueForPropertyNamed:propertyName toDecodedValue:propertyValue];
         }
     }
     
@@ -37,8 +37,18 @@
     NSArray *propertyNames = [self encodablePropertyNames];
     
     for (NSString *propertyName in propertyNames) {
-        [coder encodeObject:[self valueForKey:propertyName] forKey:propertyName];
+        [coder encodeObject:[self encodedValueForPropertyNamed:propertyName] forKey:propertyName];
     }
+}
+
+- (id)encodedValueForPropertyNamed:(NSString *)propertyName
+{
+    return [self valueForKey:propertyName];
+}
+
+- (void)setValueForPropertyNamed:(NSString *)propertyName toDecodedValue:(id)decodedValue
+{
+    [self setValue:decodedValue forKey:propertyName];
 }
 
 - (NSArray *)encodablePropertyNames
