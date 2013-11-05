@@ -9,7 +9,7 @@ JSAutoEncodedObject
 
 #### Here's how to use JSAutoEncodedObject:
 
-#### 1. Inherit from JSAutoEncodedObject
+##### 1. Inherit from JSAutoEncodedObject
 
 ```objective-c
 #import "JSAutoEncodedObject.h"
@@ -19,7 +19,7 @@ JSAutoEncodedObject
 @end
 ```
 
-#### 2. Optional: Override +encodingExcludedPropertyNames if your class has any properties that you don't want to automatically encode/decode
+##### 2. Optional: Override +encodingExcludedPropertyNames if your class has any properties that you don't want to automatically encode/decode
 
 ```objective-c
 + (NSArray *)encodingExcludedPropertyNames
@@ -28,7 +28,7 @@ JSAutoEncodedObject
 }
 ```
 
-#### 3. Optional: Override -encodedValueForPropertyNamed: and/or -setValueForPropertyNamed:toDecodedValue: to add custom encoding/decoding to a specific property
+##### 3. Optional: Override -encodedValueForPropertyNamed: and/or -setValueForPropertyNamed:toDecodedValue: to add custom encoding/decoding to a specific property
 
 ```objective-c
 - (id)encodedValueForPropertyNamed:(NSString *)propertyName
@@ -52,7 +52,7 @@ JSAutoEncodedObject
 }
 ```
 
-#### 4. Done! You can now encode or decode instaces of your class and let JSAutoEncodedObject take care of the rest
+##### 4. Done! You can now encode or decode instaces of your class and let JSAutoEncodedObject take care of the rest
 
 ```objective-c
 NSData *data = [NSKeyedArchiver archivedDataWithRootObject:myClassInstance];
