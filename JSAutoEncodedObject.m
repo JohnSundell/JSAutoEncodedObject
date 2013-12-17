@@ -62,7 +62,8 @@
             }
         }
         
-        [schema setEcodedPropertyName:minimizedPropertyName forPropertyName:propertyName];
+        [schema setEncodedPropertyName:minimizedPropertyName
+                       forPropertyName:propertyName];
     }
     
     return schema;
@@ -82,14 +83,14 @@
     schema.propertyNameMap = [NSMutableDictionary new];
     
     for (NSString *propertyName in array) {
-        [schema setEcodedPropertyName:propertyName
-                      forPropertyName:propertyName];
+        [schema setEncodedPropertyName:propertyName
+                       forPropertyName:propertyName];
     }
     
     return schema;
 }
 
-- (void)setEcodedPropertyName:(NSString *)encodedPropertyName forPropertyName:(NSString *)propertyName
+- (void)setEncodedPropertyName:(NSString *)encodedPropertyName forPropertyName:(NSString *)propertyName
 {
     [self.propertyNameMap setObject:encodedPropertyName forKey:propertyName];
 }

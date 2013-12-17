@@ -143,7 +143,7 @@
  *  Any existing mapping for the given propertyName will be
  *  overrided by this new mapping.
  */
-- (void)setEcodedPropertyName:(NSString *)encodedPropertyName
-              forPropertyName:(NSString *)propertyName;
+- (void)setEncodedPropertyName:(NSString *)encodedPropertyName
+               forPropertyName:(NSString *)propertyName;
 
 @end
