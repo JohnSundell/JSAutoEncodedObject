@@ -6,39 +6,136 @@
 #import "JSAutoEncodedObject.h"
 #import <objc/runtime.h>
 
+#pragma mark - JSAutoEncodedObjectSchema implementation
+
+@interface JSAutoEncodedObjectSchema()
+
+@property (nonatomic, strong) NSMutableDictionary *propertyNameMap;
+
+@end
+
+@implementation JSAutoEncodedObjectSchema
+
++ (instancetype)schemaForClass:(Class)theClass
+{
+    NSMutableArray *propertyNames = [NSMutableArray new];
+    
+    Class currentClass = theClass;
+    
+    while (currentClass != [NSObject class]) {
+        NSUInteger propertyCount;
+        objc_property_t *propertyList = class_copyPropertyList(currentClass, &propertyCount);
+        
+        for (NSUInteger i = 0; i < propertyCount; i++) {
+            objc_property_t property = propertyList[i];
+            NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
+            
+            if (![propertyNames containsObject:propertyName]) {
+                [propertyNames addObject:propertyName];
+            }
+        }
+        
+        free(propertyList);
+        
+        currentClass = [currentClass superclass];
+    }
+    
+    return [self schemaFromArray:propertyNames];
+}
+
++ (instancetype)autoMinimizedSchemaForClass:(Class)theClass
+{
+    JSAutoEncodedObjectSchema *schema = [self schemaForClass:theClass];
+    NSMutableArray *encodedPropertyNames = [[schema allPropertyNames] mutableCopy];
+    
+    for (NSString *propertyName in [schema allPropertyNames]) {
+        NSString *minimizedPropertyName = nil;
+        
+        while ([minimizedPropertyName length] < [propertyName length]) {
+            minimizedPropertyName = [propertyName substringToIndex:[minimizedPropertyName length] + 1];
+            
+            if (![encodedPropertyNames containsObject:minimizedPropertyName]) {
+                [encodedPropertyNames removeObject:propertyName];
+                [encodedPropertyNames addObject:minimizedPropertyName];
+                
+                break;
+            }
+        }
+        
+        [schema setEcodedPropertyName:minimizedPropertyName forPropertyName:propertyName];
+    }
+    
+    return schema;
+}
+
++ (instancetype)schemaFromDictionary:(NSDictionary *)dictionary
+{
+    JSAutoEncodedObjectSchema *schema = [self new];
+    schema.propertyNameMap = [dictionary mutableCopy];
+    
+    return schema;
+}
+
++ (instancetype)schemaFromArray:(NSArray *)array
+{
+    JSAutoEncodedObjectSchema *schema = [self new];
+    schema.propertyNameMap = [NSMutableDictionary new];
+    
+    for (NSString *propertyName in array) {
+        [schema setEcodedPropertyName:propertyName
+                      forPropertyName:propertyName];
+    }
+    
+    return schema;
+}
+
+- (void)setEcodedPropertyName:(NSString *)encodedPropertyName forPropertyName:(NSString *)propertyName
+{
+    [self.propertyNameMap setObject:encodedPropertyName forKey:propertyName];
+}
+
+- (void)removePropertyNames:(NSArray *)propertyNames
+{
+    if (!propertyNames) {
+        return;
+    }
+    
+    for (NSString *propertyName in propertyNames) {
+        [self.propertyNameMap removeObjectForKey:propertyName];
+    }
+}
+
+- (NSString *)encodedPropertyNameForPropertyName:(NSString *)propertyName
+{
+    return [self.propertyNameMap objectForKey:propertyName];
+}
+
+- (NSArray *)allPropertyNames
+{
+    return [[self.propertyNameMap allKeys] sortedArrayUsingSelector:@selector(compare:)];
+}
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"JSAutoEncodedObjectSchema: %@", self.propertyNameMap];
+}
+
+@end
+
+#pragma mark - JSAutoEncodedObject implementation
+
 @implementation JSAutoEncodedObject
+
+#pragma mark - Subclass overrides
+
++ (JSAutoEncodedObjectSchema *)schema
+{
+    return [JSAutoEncodedObjectSchema schemaForClass:self];
+}
 
 + (NSArray *)encodingExcludedPropertyNames
 {
     return nil;
-}
-
-- (id)initWithCoder:(NSCoder *)decoder
-{
-    if (!(self = [super init])) {
-        return nil;
-    }
-    
-    NSArray *propertyNames = [self encodablePropertyNames];
-    
-    for (NSString *propertyName in propertyNames) {
-        id propertyValue = [decoder decodeObjectForKey:propertyName];
-        
-        if (propertyValue) {
-            [self setValueForPropertyNamed:propertyName toDecodedValue:propertyValue];
-        }
-    }
-    
-    return self;
-}
-
-- (void)encodeWithCoder:(NSCoder *)coder
-{
-    NSArray *propertyNames = [self encodablePropertyNames];
-    
-    for (NSString *propertyName in propertyNames) {
-        [coder encodeObject:[self encodedValueForPropertyNamed:propertyName] forKey:propertyName];
-    }
 }
 
 - (id)encodedValueForPropertyNamed:(NSString *)propertyName
@@ -51,33 +148,58 @@
     [self setValue:decodedValue forKey:propertyName];
 }
 
-- (NSArray *)encodablePropertyNames
+#pragma mark - NSCoding
+
+- (id)initWithCoder:(NSCoder *)decoder
 {
-    NSMutableArray *propertyNames = [NSMutableArray new];
-    
-    Class currentClass = [self class];
-    
-    while (currentClass != [NSObject class]) {
-        NSArray *excludedPropertyNames = [currentClass encodingExcludedPropertyNames];
-        
-        unsigned int propertyCount;
-        objc_property_t *propertyList = class_copyPropertyList(currentClass, &propertyCount);
-        
-        for (unsigned int i = 0; i < propertyCount; i++) {
-            objc_property_t property = propertyList[i];
-            NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
-            
-            if (![excludedPropertyNames containsObject:propertyName] && ![propertyNames containsObject:propertyNames]) {
-                [propertyNames addObject:propertyName];
-            }
-        }
-        
-        free(propertyList);
-        
-        currentClass = [currentClass superclass];
+    if (!(self = [super init])) {
+        return nil;
     }
     
-    return propertyNames;
+    JSAutoEncodedObjectSchema *schema = [[self class] schema];
+    
+    NSAssert(schema, @"No schema defined for instance: %@", self);
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    
+    [schema removePropertyNames:[[self class] encodingExcludedPropertyNames]];
+    
+#pragma clang diagnostic pop
+    
+    for (NSString *propertyName in [schema allPropertyNames]) {
+        NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
+        
+        id propertyValue = [decoder decodeObjectForKey:encodedPropertyName];
+        
+        if (propertyValue) {
+            [self setValueForPropertyNamed:propertyName
+                            toDecodedValue:propertyValue];
+        }
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder
+{
+    JSAutoEncodedObjectSchema *schema = [[self class] schema];
+    
+    NSAssert(schema, @"No schema defined for instance: %@", self);
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    
+    [schema removePropertyNames:[[self class] encodingExcludedPropertyNames]];
+    
+#pragma clang diagnostic pop
+
+    for (NSString *propertyName in [schema allPropertyNames]) {
+        NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
+        
+        [coder encodeObject:[self encodedValueForPropertyNamed:propertyName]
+                     forKey:encodedPropertyName];
+    }
 }
 
 @end

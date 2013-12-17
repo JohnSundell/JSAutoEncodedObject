@@ -19,12 +19,15 @@ JSAutoEncodedObject
 @end
 ```
 
-##### 2. Optional: Override +encodingExcludedPropertyNames if your class has any properties that you don't want to automatically encode/decode
+##### 2. Optional: Provide a schema that JSAutoEncodedObject will use when encoding/decoding your objects
 
 ```objective-c
-+ (NSArray *)encodingExcludedPropertyNames
++ (JSAutoEncodedObjectSchema *)schema
 {
-	return @[@"nonEncodedProperty"];
+	return [JSAutoEncodedObjectSchema schemaFromDictionary:@{
+		@"property1": @"p1",
+		@"property2": @"p2"
+	}];
 }
 ```
 
