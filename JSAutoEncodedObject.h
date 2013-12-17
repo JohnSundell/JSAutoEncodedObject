@@ -148,4 +148,12 @@
 - (void)setEncodedPropertyName:(NSString *)encodedPropertyName
                forPropertyName:(NSString *)propertyName;
 
+/**
+ *  Remove an array of property names from the schema
+ *
+ *  @param propertyNames An array of property names to remove.
+ *  All members of the array must be NSString * objects.
+ */
+- (void)removePropertyNames:(NSArray *)propertyNames;
+
 @end
