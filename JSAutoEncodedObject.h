@@ -85,7 +85,8 @@
  *  Create a schema containing all the properties in a class, with
  *  their original names retained.
  *
- *  @param class The class to create a schema for
+ *  @param class The class to create a schema for. The class must inherit
+ *  from JSAutoEncodedObject.
  *
  *  @discussion This constructor is very useful when only a few properties
  *  should be changed, as to not have to create a full schema manually.
@@ -97,7 +98,8 @@
  *  their names minimized according to the minimum length name
  *  available.
  *
- *  @param theClass The class to create a schema for
+ *  @param theClass The class to create a schema for. The class must inherit
+ *  from JSAutoEncodedObject.
  *
  *  @discussion The minimum encoded name for each property (ordered alphabetically)
  *  is determined by starting from the beginning of the name, and selecting the

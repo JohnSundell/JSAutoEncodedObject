@@ -22,7 +22,7 @@
     
     Class currentClass = theClass;
     
-    while (currentClass != [NSObject class]) {
+    while (currentClass && currentClass != [NSObject class]) {
         NSUInteger propertyCount;
         objc_property_t *propertyList = class_copyPropertyList(currentClass, &propertyCount);
         
