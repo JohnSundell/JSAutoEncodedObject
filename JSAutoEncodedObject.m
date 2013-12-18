@@ -162,17 +162,7 @@
         return nil;
     }
     
-    JSAutoEncodedObjectSchema *schema = [[self class] schema];
-    schema = [self willEncodeOrDecodeUsingSchema:schema];
-    
-    NSAssert(schema, @"No schema defined for instance: %@", self);
-    
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    
-    [schema removePropertyNames:[[self class] encodingExcludedPropertyNames]];
-    
-#pragma clang diagnostic pop
+    JSAutoEncodedObjectSchema *schema = [self schema];
     
     for (NSString *propertyName in [schema allPropertyNames]) {
         NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
@@ -190,7 +180,22 @@
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
+    JSAutoEncodedObjectSchema *schema = [self schema];
+
+    for (NSString *propertyName in [schema allPropertyNames]) {
+        NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
+        
+        [coder encodeObject:[self encodedValueForPropertyNamed:propertyName]
+                     forKey:encodedPropertyName];
+    }
+}
+
+#pragma mark - Utilities
+
+- (JSAutoEncodedObjectSchema *)schema
+{
     JSAutoEncodedObjectSchema *schema = [[self class] schema];
+    
     schema = [self willEncodeOrDecodeUsingSchema:schema];
     
     NSAssert(schema, @"No schema defined for instance: %@", self);
@@ -201,13 +206,59 @@
     [schema removePropertyNames:[[self class] encodingExcludedPropertyNames]];
     
 #pragma clang diagnostic pop
+    
+    return schema;
+}
 
+@end
+
+#pragma mark - DictionarySerialization implementation
+
+@implementation JSAutoEncodedObject (DictionarySerialization)
+
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary
+{
+    if (!dictionary) {
+        return nil;
+    }
+    
+    if (!(self = [super init])) {
+        return nil;
+    }
+    
+    JSAutoEncodedObjectSchema *schema = [self schema];
+    
     for (NSString *propertyName in [schema allPropertyNames]) {
         NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
         
-        [coder encodeObject:[self encodedValueForPropertyNamed:propertyName]
-                     forKey:encodedPropertyName];
+        id propertyValue = [dictionary objectForKey:encodedPropertyName];
+        
+        if (propertyValue) {
+            [self setValueForPropertyNamed:propertyName
+                            toDecodedValue:propertyValue];
+        }
     }
+    
+    return self;
+}
+
+- (NSDictionary *)serializeToDictionary
+{
+    JSAutoEncodedObjectSchema *schema = [self schema];
+    NSMutableDictionary *dictionary = [NSMutableDictionary new];
+    
+    for (NSString *propertyName in [schema allPropertyNames]) {
+        NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
+        
+        id propertyValue = [self encodedValueForPropertyNamed:propertyName];
+        
+        if (propertyValue) {
+            [dictionary setObject:propertyValue
+                           forKey:encodedPropertyName];
+        }
+    }
+    
+    return [dictionary copy];
 }
 
 @end

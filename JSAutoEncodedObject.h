@@ -7,6 +7,8 @@
 
 @class JSAutoEncodedObjectSchema;
 
+#pragma mark - JSAutoEncodedObject
+
 /**
  *  A class that automatically encodes/decodes all of its properties
  *  when -initWithCoder: or -encodeWithCoder: is sent to it.
@@ -84,6 +86,36 @@
  *  decoding on a property name basis.
  */
 - (void)setValueForPropertyNamed:(NSString *)propertyName toDecodedValue:(id)decodedValue;
+
+@end
+
+#pragma mark - DictionarySerialization
+
+/**
+ *  Category that enables a JSAutoEncodedObject to be serialized/
+ *  deserialized to/from an NSDictionary.
+ */
+@interface JSAutoEncodedObject (DictionarySerialization)
+
+/**
+ *  Initialize an instance of JSAutoEncodedObject with a dictionary
+ *
+ *  @param dictionary The dictionary to use. The dictionary will be
+ *  compared to the object's schema, and the values for all matching keys
+ *  will be assigned to the corresponding properties on the object.
+ *
+ *  @discussion If dictionary is nil, this method will return nil.
+ */
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary;
+
+/**
+ *  Serialize an instance to an NSDictionary. The object's schema
+ *  will be used to determine the dictionary keys for the object's properties.
+ *
+ *	@return A dictionary representation of the object's properties. If the
+ *  object has no properties, an empty dictionary is returned.
+ */
+- (NSDictionary *)serializeToDictionary;
 
 @end
 
