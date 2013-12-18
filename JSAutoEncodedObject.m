@@ -23,10 +23,10 @@
     Class currentClass = theClass;
     
     while (currentClass && currentClass != [NSObject class]) {
-        NSUInteger propertyCount;
+        unsigned int propertyCount;
         objc_property_t *propertyList = class_copyPropertyList(currentClass, &propertyCount);
         
-        for (NSUInteger i = 0; i < propertyCount; i++) {
+        for (unsigned int i = 0; i < propertyCount; i++) {
             objc_property_t property = propertyList[i];
             NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
             
