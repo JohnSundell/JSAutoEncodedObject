@@ -139,6 +139,11 @@
     return nil;
 }
 
+- (JSAutoEncodedObjectSchema *)willEncodeOrDecodeUsingSchema:(JSAutoEncodedObjectSchema *)schema
+{
+    return schema;
+}
+
 - (id)encodedValueForPropertyNamed:(NSString *)propertyName
 {
     return [self valueForKey:propertyName];
@@ -158,6 +163,7 @@
     }
     
     JSAutoEncodedObjectSchema *schema = [[self class] schema];
+    schema = [self willEncodeOrDecodeUsingSchema:schema];
     
     NSAssert(schema, @"No schema defined for instance: %@", self);
     
@@ -185,6 +191,7 @@
 - (void)encodeWithCoder:(NSCoder *)coder
 {
     JSAutoEncodedObjectSchema *schema = [[self class] schema];
+    schema = [self willEncodeOrDecodeUsingSchema:schema];
     
     NSAssert(schema, @"No schema defined for instance: %@", self);
     

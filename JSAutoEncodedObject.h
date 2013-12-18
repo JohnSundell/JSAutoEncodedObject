@@ -45,6 +45,20 @@
 + (NSArray *)encodingExcludedPropertyNames __deprecated_msg("This method is deprecated in favor of schemas");
 
 /**
+ *  Sent to an instance that is just about to be encoded or decoded
+ *
+ *  @param schema The schema that will be used to encode the object
+ *
+ *  @discussion This method may be used as an override point to provide
+ *  custom schemas on an object instance basis.
+ *
+ *  @return The schema that should be used for encoding or decoding.
+ *  By default this method simply returns its parameter, obtained by
+ *  calling [[self class] schema]. This method must not return nil.
+ */
+- (JSAutoEncodedObjectSchema *)willEncodeOrDecodeUsingSchema:(JSAutoEncodedObjectSchema *)schema;
+
+/**
  *  Returns the value that should be encoded for a specific property.
  *  Called for every property the object has when -initWithCoder: is
  *  sent to it.
