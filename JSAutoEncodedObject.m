@@ -95,6 +95,17 @@
     [self.propertyNameMap setObject:encodedPropertyName forKey:propertyName];
 }
 
+- (void)addPropertyNames:(NSArray *)propertyNames
+{
+    if (!propertyNames) {
+        return;
+    }
+    
+    for (NSString *propertyName in propertyNames) {
+        [self setEncodedPropertyName:propertyName forPropertyName:propertyName];
+    }
+}
+
 - (void)removePropertyNames:(NSArray *)propertyNames
 {
     if (!propertyNames) {

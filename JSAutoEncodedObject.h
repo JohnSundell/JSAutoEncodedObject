@@ -194,6 +194,15 @@
 - (void)setEncodedPropertyName:(NSString *)encodedPropertyName
                forPropertyName:(NSString *)propertyName;
 
+
+/**
+ *  Add an array of property names to the schema
+ *
+ *  @param propertyNames An array of property names to add.
+ *  All members of the array must be NSString * objects.
+ */
+- (void)addPropertyNames:(NSArray *)propertyNames;
+
 /**
  *  Remove an array of property names from the schema
  *
