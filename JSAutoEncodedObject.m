@@ -1,6 +1,6 @@
 //
 //  JSAutoEncodedObject
-//  Copyright (c) 2013 John Sundell
+//  Copyright (c) 2013-2014 John Sundell
 //
 
 #import "JSAutoEncodedObject.h"
@@ -93,6 +93,11 @@
 - (void)setEncodedPropertyName:(NSString *)encodedPropertyName forPropertyName:(NSString *)propertyName
 {
     [self.propertyNameMap setObject:encodedPropertyName forKey:propertyName];
+}
+
+- (NSDictionary *)dictionaryRepresentation
+{
+    return [self.propertyNameMap copy];
 }
 
 - (void)addPropertyNames:(NSArray *)propertyNames

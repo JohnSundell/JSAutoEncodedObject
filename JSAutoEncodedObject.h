@@ -1,6 +1,6 @@
 //
 //  JSAutoEncodedObject
-//  Copyright (c) 2013 John Sundell
+//  Copyright (c) 2013-2014 John Sundell
 //
 
 #import <Foundation/Foundation.h>
@@ -194,6 +194,15 @@
 - (void)setEncodedPropertyName:(NSString *)encodedPropertyName
                forPropertyName:(NSString *)propertyName;
 
+
+/**
+ *  Returns a dictionary representation of the schema.
+ *
+ *  @discussion The dictionary's keys will be the actual
+ *  property names the schema contains, and the values for
+ *  those keys will be the encoded name for those properties.
+ */
+- (NSDictionary *)dictionaryRepresentation;
 
 /**
  *  Add an array of property names to the schema
