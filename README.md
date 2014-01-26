@@ -61,6 +61,11 @@ JSAutoEncodedObject
 NSData *data = [NSKeyedArchiver archivedDataWithRootObject:myClassInstance];
 ```
 
+#### Parse-support
+
+JSAutoEncodedObject also comes with Parse-support for converting your model objects to/from Parse's PFObject (see [www.parse.com](http://www.parse.com) for more info).
+Parse-support is provided through the `JSAutoEncodedObject+Prase` category.
+
 #### Hope that you'll enjoy using JSAutoEncodedObject!
 
 Why not give me a shout on Twitter: [@johnsundell](https://twitter.com/johnsundell)
