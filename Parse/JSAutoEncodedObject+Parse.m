@@ -59,7 +59,14 @@
             propertyValue = [propertyValue serializeToDictionary];
         }
         
-        [parseObject setObject:propertyValue forKey:encodedPropertyName];
+        @try {
+            [parseObject setObject:propertyValue forKey:encodedPropertyName];
+        }
+        @catch (NSException *exception) {
+            NSLog(@"The property \"%@\" could not be serialized to a Parse Object", propertyName);
+            
+            return nil;
+        }
     }
     
     return parseObject;
