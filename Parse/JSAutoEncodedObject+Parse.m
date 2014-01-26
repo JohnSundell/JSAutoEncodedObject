@@ -53,7 +53,11 @@
     
     for (NSString *propertyName in [schemaDictionary allKeys]) {
         NSString *encodedPropertyName = [schemaDictionary objectForKey:propertyName];
-        id propertyValue = [self valueForKey:propertyName];
+        id propertyValue = [self encodedValueForPropertyNamed:propertyName];
+        
+        if ([propertyValue isKindOfClass:[JSAutoEncodedObject class]]) {
+            propertyValue = [propertyValue serializeToDictionary];
+        }
         
         [parseObject setObject:propertyValue forKey:encodedPropertyName];
     }

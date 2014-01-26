@@ -200,13 +200,30 @@
 
     for (NSString *propertyName in [schema allPropertyNames]) {
         NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
+        id encodedValue = [self encodedValueForPropertyNamed:propertyName
+                                     serializingToDictionary:NO];
         
-        [coder encodeObject:[self encodedValueForPropertyNamed:propertyName]
+        [coder encodeObject:encodedValue
                      forKey:encodedPropertyName];
     }
 }
 
 #pragma mark - Utilities
+
+- (id)encodedValueForPropertyNamed:(NSString *)propertyName serializingToDictionary:(BOOL)serializingToDictionary
+{
+    id value = [self encodedValueForPropertyNamed:propertyName];
+    
+    if ([value isKindOfClass:[JSAutoEncodedObject class]]) {
+        if (serializingToDictionary) {
+            value = [value serializeToDictionary];
+        } else {
+            value = [NSKeyedArchiver archivedDataWithRootObject:value];
+        }
+    }
+    
+    return value;
+}
 
 - (JSAutoEncodedObjectSchema *)schema
 {
@@ -266,7 +283,8 @@
     for (NSString *propertyName in [schema allPropertyNames]) {
         NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
         
-        id propertyValue = [self encodedValueForPropertyNamed:propertyName];
+        id propertyValue = [self encodedValueForPropertyNamed:propertyName
+                                      serializingToDictionary:YES];
         
         if (propertyValue) {
             [dictionary setObject:propertyValue
