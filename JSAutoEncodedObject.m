@@ -183,7 +183,10 @@
     for (NSString *propertyName in [schema allPropertyNames]) {
         NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
         
-        id propertyValue = [decoder decodeObjectForKey:encodedPropertyName];
+        id originalValue = [decoder decodeObjectForKey:encodedPropertyName];
+        id propertyValue = [self decodedValueForPropertyNamed:propertyName
+                                  deserializingFromDictionary:NO
+                                                originalValue:originalValue];
         
         if (propertyValue) {
             [self setValueForPropertyNamed:propertyName
@@ -225,6 +228,41 @@
     return value;
 }
 
+- (id)decodedValueForPropertyNamed:(NSString *)propertyName deserializingFromDictionary:(BOOL)deserializingFromDictionary originalValue:(id)originalValue
+{
+    if (deserializingFromDictionary) {
+        if (![originalValue isKindOfClass:[NSDictionary class]]) {
+            return originalValue;
+        }
+    } else {
+        if (![originalValue isKindOfClass:[NSData class]]) {
+            return originalValue;
+        }
+    }
+    
+    objc_property_t property = class_getProperty([self class], [propertyName cStringUsingEncoding:NSUTF8StringEncoding]);
+    NSString *attributeString = [NSString stringWithUTF8String:property_getAttributes(property)];
+    NSArray *attributes = [attributeString componentsSeparatedByString:@","];
+    NSString *typeAttribute = [attributes firstObject];
+    
+    if (![typeAttribute hasPrefix:@"T@"]) {
+        return originalValue;
+    }
+    
+    NSString *typeClassName = [typeAttribute substringWithRange:NSMakeRange(3, [typeAttribute length] - 4)];
+    Class typeClass = NSClassFromString(typeClassName);
+    
+    if (![typeClass isSubclassOfClass:[JSAutoEncodedObject class]]) {
+        return originalValue;
+    }
+    
+    if (deserializingFromDictionary) {
+        return [[typeClass alloc] initWithDictionary:originalValue];
+    }
+    
+    return [NSKeyedUnarchiver unarchiveObjectWithData:originalValue];
+}
+
 - (JSAutoEncodedObjectSchema *)schema
 {
     JSAutoEncodedObjectSchema *schema = [[self class] schema];
@@ -264,7 +302,10 @@
     for (NSString *propertyName in [schema allPropertyNames]) {
         NSString *encodedPropertyName = [schema encodedPropertyNameForPropertyName:propertyName];
         
-        id propertyValue = [dictionary objectForKey:encodedPropertyName];
+        id originalValue = [dictionary objectForKey:encodedPropertyName];
+        id propertyValue = [self decodedValueForPropertyNamed:propertyName
+                                  deserializingFromDictionary:YES
+                                                originalValue:originalValue];
         
         if (propertyValue) {
             [self setValueForPropertyNamed:propertyName
