@@ -3,13 +3,13 @@ JSAutoEncodedObject
 
 #### Automatically encode or decode any Objective-C object
 
-* No need to write manual NSCoding implementations, just inherit from JSAutoEncodedObject and all NSData encoding and decoding will be done automatically for your class.
+* No need to write manual NSCoding implementations, just inherit from JSAutoEncodedObject and all NSData or NSDictionary encoding and decoding will be done automatically for your class.
 * Provides an override point, to let you specify any properties you don't want to encode for a specific class.
-* Super-useful when working with Apple's NSData-based APIs, such as NSUserDefaults or GameCenter.
+* Super-useful when working with Apple's NSData-based APIs, such as NSUserDefaults or GameCenter, or when working with JSON.
 
 #### Here's how to use JSAutoEncodedObject:
 
-##### 1. Inherit from JSAutoEncodedObject
+##### Inherit from JSAutoEncodedObject
 
 ```objective-c
 #import "JSAutoEncodedObject.h"
@@ -19,7 +19,7 @@ JSAutoEncodedObject
 @end
 ```
 
-##### 2. Optional: Provide a schema that JSAutoEncodedObject will use when encoding/decoding your objects
+##### Optional: Provide a schema that JSAutoEncodedObject will use when encoding/decoding your objects
 
 ```objective-c
 + (JSAutoEncodedObjectSchema *)schema
@@ -31,7 +31,7 @@ JSAutoEncodedObject
 }
 ```
 
-##### 3. Optional: Override -encodedValueForPropertyNamed: and/or -setValueForPropertyNamed:toDecodedValue: to add custom encoding/decoding to a specific property
+##### Optional: Override -encodedValueForPropertyNamed: and/or -setValueForPropertyNamed:toDecodedValue: to add custom encoding/decoding to a specific property
 
 ```objective-c
 - (id)encodedValueForPropertyNamed:(NSString *)propertyName
@@ -55,10 +55,32 @@ JSAutoEncodedObject
 }
 ```
 
-##### 4. Done! You can now encode or decode instaces of your class and let JSAutoEncodedObject take care of the rest
+##### Encoding/decoding to/from NSData
+
+Instances from your class will now be automatically encoded to NSData when used with NSKeyedArchiver:
 
 ```objective-c
 NSData *data = [NSKeyedArchiver archivedDataWithRootObject:myClassInstance];
+```
+
+Decoding will also be done automatically:
+
+```objective-c
+MyClass *decodedInstance = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+```
+
+##### Serializing/deserializing to/from an NSDictionary
+
+You may now also automatically serialize instances of your class to an NSDictionary:
+
+```objective-c
+NSDictionary *dictionary = [myClassInstance serializeToDictionary];
+```
+
+And back:
+
+```objective-c
+MyClass *decodedInstance = [[MyClass alloc] initWithDictionary:dictionary];
 ```
 
 #### Parse-support
